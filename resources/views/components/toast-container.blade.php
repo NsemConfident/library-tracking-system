@@ -2,19 +2,27 @@
     x-data="{
         toasts: [],
         init() {
-            // Listen for Livewire browser events
+            // Listen for Livewire browser events (Livewire 3 dispatches to window)
             window.addEventListener('toast', (event) => {
-                this.addToast(event.detail);
+                if (event.detail) {
+                    this.addToast(event.detail);
+                }
             });
         },
         addToast(data) {
             if (!data) return;
+            
+            // Handle both object and array formats
+            const message = data.message || (Array.isArray(data) && data[0]?.message) || 'Notification';
+            const type = data.type || (Array.isArray(data) && data[0]?.type) || 'success';
+            
             const toastId = Date.now() + Math.random();
             const toast = {
                 id: toastId,
-                message: data.message || data[0]?.message || 'Notification',
-                type: data.type || data[0]?.type || 'success',
+                message: message,
+                type: type,
             };
+            
             this.toasts.push(toast);
             setTimeout(() => this.removeToast(toastId), 5000);
         },
