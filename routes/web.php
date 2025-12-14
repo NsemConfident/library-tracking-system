@@ -41,6 +41,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/circulation/checkout', \App\Livewire\Circulation\Checkout::class)->name('circulation.checkout');
             Route::get('/circulation/return', \App\Livewire\Circulation\ReturnBook::class)->name('circulation.return');
         });
+
+        // Patron self-service pages
+        Route::get('/my-loans', \App\Livewire\MyLoans\Index::class)->name('my-loans');
+        Route::get('/my-holds', \App\Livewire\MyHolds\Index::class)->name('my-holds');
+        Route::get('/my-fines', \App\Livewire\MyFines\Index::class)->name('my-fines');
     });
 });
 

@@ -22,6 +22,10 @@
                     @can('librarian')
                         <flux:navlist.item icon="arrow-right-circle" :href="route('library.circulation.checkout')" :current="request()->routeIs('library.circulation.checkout')" wire:navigate>{{ __('Checkout') }}</flux:navlist.item>
                         <flux:navlist.item icon="arrow-left-circle" :href="route('library.circulation.return')" :current="request()->routeIs('library.circulation.return')" wire:navigate>{{ __('Return') }}</flux:navlist.item>
+                    @else
+                        <flux:navlist.item icon="book-open" :href="route('library.my-loans')" :current="request()->routeIs('library.my-loans')" wire:navigate>{{ __('My Loans') }}</flux:navlist.item>
+                        <flux:navlist.item icon="clock" :href="route('library.my-holds')" :current="request()->routeIs('library.my-holds')" wire:navigate>{{ __('My Holds') }}</flux:navlist.item>
+                        <flux:navlist.item icon="currency-dollar" :href="route('library.my-fines')" :current="request()->routeIs('library.my-fines')" wire:navigate>{{ __('My Fines') }}</flux:navlist.item>
                     @endcan
                 </flux:navlist.group>
             </flux:navlist>
