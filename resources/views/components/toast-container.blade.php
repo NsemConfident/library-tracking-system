@@ -1,14 +1,22 @@
 <div 
     x-data="{
         toasts: [],
-        addToast(toast) {
-            this.toasts.push({
-                id: Date.now(),
-                message: toast.message,
-                type: toast.type || 'success',
-                ...toast
+        init() {
+            // Listen for Livewire browser events
+            window.addEventListener('toast', (event) => {
+                this.addToast(event.detail);
             });
-            setTimeout(() => this.removeToast(this.toasts[this.toasts.length - 1].id), 5000);
+        },
+        addToast(data) {
+            if (!data) return;
+            const toastId = Date.now() + Math.random();
+            const toast = {
+                id: toastId,
+                message: data.message || data[0]?.message || 'Notification',
+                type: data.type || data[0]?.type || 'success',
+            };
+            this.toasts.push(toast);
+            setTimeout(() => this.removeToast(toastId), 5000);
         },
         removeToast(id) {
             this.toasts = this.toasts.filter(toast => toast.id !== id);
@@ -20,7 +28,7 @@
 >
     <template x-for="toast in toasts" :key="toast.id">
         <div
-            x-show="toast"
+            x-show="true"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 transform translate-x-full"
             x-transition:enter-end="opacity-100 transform translate-x-0"
@@ -40,7 +48,8 @@
             </div>
             <button
                 @click="removeToast(toast.id)"
-                class="text-current opacity-70 hover:opacity-100"
+                class="text-current opacity-70 hover:opacity-100 transition-opacity"
+                aria-label="Close notification"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
