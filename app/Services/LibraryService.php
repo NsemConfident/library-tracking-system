@@ -16,17 +16,26 @@ use Illuminate\Support\Facades\DB;
 
 class LibraryService
 {
+    protected SettingsService $settings;
+
+    public function __construct(SettingsService $settings)
+    {
+        $this->settings = $settings;
+    }
     /**
      * Checkout a book copy to a user
      */
-    public function checkout(Copy $copy, User $user, int $loanDays = 14): Loan
+    public function checkout(Copy $copy, User $user, ?int $loanDays = null): Loan
     {
         if (!$copy->isAvailable()) {
             throw new \Exception('This copy is not available for checkout.');
         }
 
-        if ($user->activeLoans()->count() >= 10) {
-            throw new \Exception('User has reached the maximum number of active loans.');
+        $loanDays = $loanDays ?? $this->settings->getLoanPeriodDays();
+        $maxLoans = $this->settings->getMaxLoansPerPatron();
+
+        if ($user->activeLoans()->count() >= $maxLoans) {
+            throw new \Exception("User has reached the maximum number of active loans ({$maxLoans}).");
         }
 
         return DB::transaction(function () use ($copy, $user, $loanDays) {
@@ -85,7 +94,7 @@ class LibraryService
     /**
      * Renew a loan
      */
-    public function renew(Loan $loan, int $additionalDays = 14): Loan
+    public function renew(Loan $loan, ?int $additionalDays = null): Loan
     {
         if ($loan->status !== 'active') {
             throw new \Exception('Only active loans can be renewed.');
@@ -94,6 +103,8 @@ class LibraryService
         if ($loan->copy->book->holds()->where('status', 'pending')->exists()) {
             throw new \Exception('Cannot renew: there are pending holds for this book.');
         }
+
+        $additionalDays = $additionalDays ?? $this->settings->getRenewalPeriodDays();
 
         $loan->update([
             'due_date' => $loan->due_date->addDays($additionalDays),
@@ -119,11 +130,13 @@ class LibraryService
 
         $position = $book->holds()->where('status', 'pending')->count() + 1;
 
+        $holdExpiryDays = $this->settings->getHoldExpiryDays();
+
         $hold = Hold::create([
             'book_id' => $book->id,
             'user_id' => $user->id,
             'requested_date' => Carbon::today(),
-            'expiry_date' => Carbon::today()->addDays(7),
+            'expiry_date' => Carbon::today()->addDays($holdExpiryDays),
             'status' => 'pending',
             'position' => $position,
         ]);
@@ -191,7 +204,9 @@ class LibraryService
     protected function createOverdueFine(Loan $loan): Fine
     {
         $daysOverdue = $loan->days_overdue;
-        $fineAmount = $daysOverdue * 0.50; // $0.50 per day
+        $fineRatePerDay = $this->settings->getFineRatePerDay();
+        $fineAmount = $daysOverdue * $fineRatePerDay;
+        $fineDueDays = $this->settings->getFineDueDays();
 
         return Fine::create([
             'user_id' => $loan->user_id,
@@ -199,7 +214,7 @@ class LibraryService
             'amount' => $fineAmount,
             'type' => 'overdue',
             'status' => 'pending',
-            'due_date' => Carbon::today()->addDays(30),
+            'due_date' => Carbon::today()->addDays($fineDueDays),
             'description' => "Overdue fine for {$daysOverdue} days",
             'created_by' => auth()->id(),
         ]);
@@ -216,10 +231,12 @@ class LibraryService
             $loan->copy->update(['status' => 'missing']);
 
             // Create lost book fine
+            $lostBookFee = $this->settings->getLostBookFee();
+            
             $fine = Fine::create([
                 'user_id' => $loan->user_id,
                 'loan_id' => $loan->id,
-                'amount' => 50.00, // Replacement cost
+                'amount' => $lostBookFee,
                 'type' => 'lost',
                 'status' => 'pending',
                 'description' => 'Lost book replacement fee',

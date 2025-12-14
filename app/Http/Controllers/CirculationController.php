@@ -31,7 +31,7 @@ class CirculationController extends Controller
         try {
             $copy = Copy::where('barcode', $request->barcode)->firstOrFail();
             $user = User::findOrFail($request->user_id);
-            $loanDays = $request->input('loan_days', 14);
+            $loanDays = $request->input('loan_days');
 
             $loan = $this->libraryService->checkout($copy, $user, $loanDays);
 
@@ -79,7 +79,7 @@ class CirculationController extends Controller
         ]);
 
         try {
-            $additionalDays = $request->input('additional_days', 14);
+            $additionalDays = $request->input('additional_days');
             $loan = $this->libraryService->renew($loan, $additionalDays);
 
             return response()->json([

@@ -4,6 +4,7 @@ namespace App\Livewire\MyLoans;
 
 use App\Models\Loan;
 use App\Services\LibraryService;
+use App\Services\SettingsService;
 use Livewire\Component;
 
 class Index extends Component
@@ -22,7 +23,7 @@ class Index extends Component
                 ->where('status', 'active')
                 ->firstOrFail();
 
-            $loan = app(LibraryService::class)->renew($loan, 14);
+            $loan = app(LibraryService::class)->renew($loan);
             
             $this->dispatch('toast', [
                 'message' => "Loan renewed successfully. New due date: {$loan->due_date->format('M d, Y')}",

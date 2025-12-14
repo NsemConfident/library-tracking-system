@@ -4,18 +4,22 @@ namespace App\Console\Commands;
 
 use App\Models\Loan;
 use App\Notifications\OverdueNotification;
+use App\Services\SettingsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class SendOverdueNotifications extends Command
 {
-    protected $signature = 'library:send-overdue-notifications {--days=1 : Send notifications for books overdue by this many days}';
+    protected $signature = 'library:send-overdue-notifications {--days= : Send notifications for books overdue by this many days}';
 
     protected $description = 'Send overdue notification emails to patrons';
 
     public function handle()
     {
-        $daysOverdue = (int) $this->option('days');
+        $settings = app(SettingsService::class);
+        $daysOverdue = $this->option('days') 
+            ? (int) $this->option('days') 
+            : $settings->getOverdueNotificationDays();
         $cutoffDate = Carbon::today()->subDays($daysOverdue);
 
         $loans = Loan::where('status', 'active')

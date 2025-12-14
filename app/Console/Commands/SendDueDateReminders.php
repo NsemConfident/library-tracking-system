@@ -4,18 +4,22 @@ namespace App\Console\Commands;
 
 use App\Models\Loan;
 use App\Notifications\DueDateReminder;
+use App\Services\SettingsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class SendDueDateReminders extends Command
 {
-    protected $signature = 'library:send-due-date-reminders {--days=3 : Number of days before due date to send reminder}';
+    protected $signature = 'library:send-due-date-reminders {--days= : Number of days before due date to send reminder}';
 
     protected $description = 'Send due date reminder emails to patrons';
 
     public function handle()
     {
-        $daysBeforeDue = (int) $this->option('days');
+        $settings = app(SettingsService::class);
+        $daysBeforeDue = $this->option('days') 
+            ? (int) $this->option('days') 
+            : $settings->getDueDateReminderDays();
         $reminderDate = Carbon::today()->addDays($daysBeforeDue);
 
         $loans = Loan::where('status', 'active')

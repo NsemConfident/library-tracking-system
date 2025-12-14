@@ -5,6 +5,7 @@ namespace App\Livewire\Circulation;
 use App\Models\Copy;
 use App\Models\User;
 use App\Services\LibraryService;
+use App\Services\SettingsService;
 use Livewire\Component;
 
 class Checkout extends Component
@@ -12,7 +13,12 @@ class Checkout extends Component
     public $barcode = '';
     public $userSearch = '';
     public $selectedUserId = null;
-    public $loanDays = 14;
+    public $loanDays;
+
+    public function mount()
+    {
+        $this->loanDays = app(SettingsService::class)->getLoanPeriodDays();
+    }
     public $message = '';
     public $messageType = '';
 
