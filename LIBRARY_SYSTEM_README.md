@@ -2,6 +2,10 @@
 
 A comprehensive library management system built with Laravel 12, Livewire, and Flux UI components.
 
+> 📚 **For complete documentation, see [DOCUMENTATION.md](DOCUMENTATION.md)**  
+> 👥 **For user guides, see [USER_GUIDE.md](USER_GUIDE.md)**  
+> 🔌 **For API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)**
+
 ## Features
 
 ### Core Functionality
@@ -252,9 +256,28 @@ resources/
 - Mobile app API
 - Public catalog view
 
+## Documentation
+
+- **[Complete Documentation](DOCUMENTATION.md)**: Full system documentation including architecture, development guide, and troubleshooting
+- **[User Guide](USER_GUIDE.md)**: Step-by-step guides for patrons, librarians, and administrators
+- **[API Documentation](API_DOCUMENTATION.md)**: Complete API reference with examples
+
+## Quick Links
+
+- **Admin Panel**: `/admin` (librarian/admin access)
+- **Book Catalog**: `/library/books`
+- **My Loans**: `/library/my-loans` (patrons)
+- **My Holds**: `/library/my-holds` (patrons)
+- **My Fines**: `/library/my-fines` (patrons)
+- **Checkout**: `/library/circulation/checkout` (librarians)
+- **Return**: `/library/circulation/return` (librarians)
+
 ## Support
 
 For issues or questions, please check:
+- [Complete Documentation](DOCUMENTATION.md)
+- [User Guide](USER_GUIDE.md)
+- [API Documentation](API_DOCUMENTATION.md)
 - Laravel documentation: https://laravel.com/docs
 - Livewire documentation: https://livewire.laravel.com
 - Flux UI documentation: https://flux.laravel.com
