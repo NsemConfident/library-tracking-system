@@ -26,13 +26,17 @@ class ReturnBook extends Component
 
             $loan = app(LibraryService::class)->return($loan);
 
-            $this->message = "Book '{$loan->copy->book->title}' returned successfully";
-            $this->messageType = 'success';
+            $this->dispatch('toast', [
+                'message' => "Book '{$loan->copy->book->title}' returned successfully",
+                'type' => 'success'
+            ]);
             
             $this->reset('barcode');
         } catch (\Exception $e) {
-            $this->message = $e->getMessage();
-            $this->messageType = 'error';
+            $this->dispatch('toast', [
+                'message' => $e->getMessage(),
+                'type' => 'error'
+            ]);
         }
     }
 

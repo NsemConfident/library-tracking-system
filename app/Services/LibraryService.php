@@ -9,6 +9,8 @@ use App\Models\Fine;
 use App\Models\Hold;
 use App\Models\Loan;
 use App\Models\User;
+use App\Notifications\FineNotification;
+use App\Notifications\HoldReadyNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -69,7 +71,9 @@ class LibraryService
 
             // Check for overdue fines
             if ($loan->isOverdue()) {
-                $this->createOverdueFine($loan);
+                $fine = $this->createOverdueFine($loan);
+                // Send fine notification
+                $loan->user->notify(new FineNotification($fine));
             }
 
             AuditLog::log('return', 'Loan', $loan->id, "Book returned: {$copy->book->title}");
@@ -161,6 +165,8 @@ class LibraryService
         if ($nextHold && $book->hasAvailableCopies()) {
             $nextHold->update(['status' => 'ready']);
             $this->recalculateHoldPositions($book);
+            // Send hold ready notification
+            $nextHold->user->notify(new HoldReadyNotification($nextHold));
         }
     }
 
@@ -210,7 +216,7 @@ class LibraryService
             $loan->copy->update(['status' => 'missing']);
 
             // Create lost book fine
-            Fine::create([
+            $fine = Fine::create([
                 'user_id' => $loan->user_id,
                 'loan_id' => $loan->id,
                 'amount' => 50.00, // Replacement cost
@@ -219,6 +225,9 @@ class LibraryService
                 'description' => 'Lost book replacement fee',
                 'created_by' => auth()->id(),
             ]);
+
+            // Send fine notification
+            $loan->user->notify(new FineNotification($fine));
 
             AuditLog::log('marked_lost', 'Loan', $loan->id, "Loan marked as lost");
         });

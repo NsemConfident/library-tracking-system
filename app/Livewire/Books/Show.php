@@ -21,12 +21,16 @@ class Show extends Component
     {
         try {
             $hold = app(LibraryService::class)->placeHold($this->book, auth()->user());
-            $this->message = 'Hold placed successfully. You will be notified when the book is available.';
-            $this->messageType = 'success';
             $this->book->refresh();
+            $this->dispatch('toast', [
+                'message' => 'Hold placed successfully. You will be notified when the book is available.',
+                'type' => 'success'
+            ]);
         } catch (\Exception $e) {
-            $this->message = $e->getMessage();
-            $this->messageType = 'error';
+            $this->dispatch('toast', [
+                'message' => $e->getMessage(),
+                'type' => 'error'
+            ]);
         }
     }
 

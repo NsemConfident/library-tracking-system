@@ -141,6 +141,8 @@
 
         {{ $slot }}
 
+        <x-toast-container />
+
         @fluxScripts
     </body>
 </html>

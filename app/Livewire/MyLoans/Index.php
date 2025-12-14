@@ -24,11 +24,15 @@ class Index extends Component
 
             $loan = app(LibraryService::class)->renew($loan, 14);
             
-            $this->message = "Loan renewed successfully. New due date: {$loan->due_date->format('M d, Y')}";
-            $this->messageType = 'success';
+            $this->dispatch('toast', [
+                'message' => "Loan renewed successfully. New due date: {$loan->due_date->format('M d, Y')}",
+                'type' => 'success'
+            ]);
         } catch (\Exception $e) {
-            $this->message = $e->getMessage();
-            $this->messageType = 'error';
+            $this->dispatch('toast', [
+                'message' => $e->getMessage(),
+                'type' => 'error'
+            ]);
         } finally {
             $this->renewingLoanId = null;
         }

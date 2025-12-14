@@ -24,11 +24,15 @@ class Index extends Component
 
             app(LibraryService::class)->cancelHold($hold);
             
-            $this->message = "Hold cancelled successfully.";
-            $this->messageType = 'success';
+            $this->dispatch('toast', [
+                'message' => 'Hold cancelled successfully.',
+                'type' => 'success'
+            ]);
         } catch (\Exception $e) {
-            $this->message = $e->getMessage();
-            $this->messageType = 'error';
+            $this->dispatch('toast', [
+                'message' => $e->getMessage(),
+                'type' => 'error'
+            ]);
         } finally {
             $this->cancellingHoldId = null;
         }

@@ -37,13 +37,17 @@ class Checkout extends Component
 
             $loan = app(LibraryService::class)->checkout($copy, $user, $this->loanDays);
 
-            $this->message = "Book '{$loan->copy->book->title}' checked out successfully to {$user->name}";
-            $this->messageType = 'success';
+            $this->dispatch('toast', [
+                'message' => "Book '{$loan->copy->book->title}' checked out successfully to {$user->name}",
+                'type' => 'success'
+            ]);
             
             $this->reset(['barcode', 'selectedUserId', 'userSearch', 'loanDays']);
         } catch (\Exception $e) {
-            $this->message = $e->getMessage();
-            $this->messageType = 'error';
+            $this->dispatch('toast', [
+                'message' => $e->getMessage(),
+                'type' => 'error'
+            ]);
         }
     }
 
