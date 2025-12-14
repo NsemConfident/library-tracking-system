@@ -15,6 +15,15 @@
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 </flux:navlist.group>
+
+                <flux:navlist.group :heading="__('Library')" class="grid">
+                    <flux:navlist.item icon="book-open" :href="route('library.books.index')" :current="request()->routeIs('library.books.*')" wire:navigate>{{ __('Book Catalog') }}</flux:navlist.item>
+                    
+                    @can('librarian')
+                        <flux:navlist.item icon="arrow-right-circle" :href="route('library.circulation.checkout')" :current="request()->routeIs('library.circulation.checkout')" wire:navigate>{{ __('Checkout') }}</flux:navlist.item>
+                        <flux:navlist.item icon="arrow-left-circle" :href="route('library.circulation.return')" :current="request()->routeIs('library.circulation.return')" wire:navigate>{{ __('Return') }}</flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />

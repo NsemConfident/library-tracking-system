@@ -32,6 +32,8 @@ class Show extends Component
 
     public function render()
     {
-        return view('livewire.books.show');
+        return view('livewire.books.show')->layout('components.layouts.app.sidebar', [
+            'title' => $this->book->title,
+        ]);
     }
 }

@@ -59,6 +59,8 @@ class Checkout extends Component
 
         return view('livewire.circulation.checkout', [
             'users' => $users,
+        ])->layout('components.layouts.app.sidebar', [
+            'title' => __('Checkout Book'),
         ]);
     }
 }

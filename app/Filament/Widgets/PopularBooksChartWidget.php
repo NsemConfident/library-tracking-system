@@ -7,6 +7,7 @@ use Filament\Widgets\ChartWidget;
 
 class PopularBooksChartWidget extends ChartWidget
 {
+    protected static ?int $sort = 4;
     protected ?string $heading = 'Most Checked Out Books (Top 10)';
 
     protected int | string | array $columnSpan = 'full';

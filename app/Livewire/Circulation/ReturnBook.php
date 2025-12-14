@@ -38,6 +38,8 @@ class ReturnBook extends Component
 
     public function render()
     {
-        return view('livewire.circulation.return-book');
+        return view('livewire.circulation.return-book')->layout('components.layouts.app.sidebar', [
+            'title' => __('Return Book'),
+        ]);
     }
 }

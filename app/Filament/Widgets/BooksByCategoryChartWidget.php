@@ -9,6 +9,7 @@ class BooksByCategoryChartWidget extends ChartWidget
 {
     protected ?string $heading = 'Books by Category';
 
+    protected static ?int $sort = 2;
     protected function getData(): array
     {
         $categories = Book::selectRaw('category, COUNT(*) as count')

@@ -40,6 +40,8 @@ class Index extends Component
         return view('livewire.dashboard.index', [
             'stats' => $stats,
             'recentLoans' => $recentLoans,
+        ])->layout('components.layouts.app.sidebar', [
+            'title' => __('Dashboard'),
         ]);
     }
 }

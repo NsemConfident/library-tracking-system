@@ -42,6 +42,8 @@ class Index extends Component
         return view('livewire.books.index', [
             'books' => $books,
             'categories' => $categories,
+        ])->layout('components.layouts.app.sidebar', [
+            'title' => __('Book Catalog'),
         ]);
     }
 }

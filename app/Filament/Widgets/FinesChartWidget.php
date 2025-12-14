@@ -7,6 +7,7 @@ use Filament\Widgets\ChartWidget;
 
 class FinesChartWidget extends ChartWidget
 {
+    protected static ?int $sort = 3;
     protected ?string $heading = 'Fines by Status';
 
     protected function getData(): array

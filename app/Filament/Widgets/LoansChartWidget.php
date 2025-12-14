@@ -8,10 +8,10 @@ use Illuminate\Support\Carbon;
 
 class LoansChartWidget extends ChartWidget
 {
+    protected static ?int $sort = 5;
     protected ?string $heading = 'Loans Over Time (Last 30 Days)';
 
     protected int | string | array $columnSpan = 'full';
-
     protected function getData(): array
     {
         $days = 30;
