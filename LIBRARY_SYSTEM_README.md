@@ -246,13 +246,25 @@ resources/
 - Audit logging for all operations
 - Input validation on all endpoints
 
+## RFID Integration
+
+The system supports RFID card scanning using Arduino Uno + RC522 reader.
+
+**Quick Start**: See [RFID_QUICK_START.md](RFID_QUICK_START.md)  
+**Full Documentation**: See [RFID_IMPLEMENTATION.md](RFID_IMPLEMENTATION.md)
+
+### Features
+- ✅ Real-time RFID card scanning
+- ✅ Auto-detection for checkout/return
+- ✅ USB Serial integration (no drivers needed)
+- ✅ Works with MIFARE Classic/Ultralight cards
+- ✅ Automatic form submission on return page
+
 ## Future Enhancements
 
 - Email notifications for due dates and holds
-- Barcode scanner integration
 - Advanced reporting and analytics
 - Multi-branch library support
-- RFID integration
 - Mobile app API
 - Public catalog view
 
@@ -261,6 +273,8 @@ resources/
 - **[Complete Documentation](DOCUMENTATION.md)**: Full system documentation including architecture, development guide, and troubleshooting
 - **[User Guide](USER_GUIDE.md)**: Step-by-step guides for patrons, librarians, and administrators
 - **[API Documentation](API_DOCUMENTATION.md)**: Complete API reference with examples
+- **[RFID Implementation](RFID_IMPLEMENTATION.md)**: Complete guide for Arduino + RC522 RFID integration
+- **[RFID Quick Start](RFID_QUICK_START.md)**: Quick reference for RFID setup and usage
 
 ## Quick Links
 
