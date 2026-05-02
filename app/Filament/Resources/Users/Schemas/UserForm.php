@@ -43,7 +43,7 @@ class UserForm
                     ->maxLength(32)
                     ->rules([
                         fn ($record) => Rule::unique('users', 'rfid_uid')->ignore($record?->id),
-                        function (string $attribute, $value, \Closure $fail) {
+                        fn () => function (string $attribute, $value, \Closure $fail) {
                             if (blank($value)) {
                                 return;
                             }

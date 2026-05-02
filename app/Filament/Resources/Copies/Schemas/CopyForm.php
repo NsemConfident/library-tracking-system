@@ -26,7 +26,7 @@ class CopyForm
                     ->unique(ignoreRecord: true)
                     ->maxLength(255)
                     ->rules([
-                        function (string $attribute, $value, \Closure $fail) {
+                        fn () => function (string $attribute, $value, \Closure $fail) {
                             if (blank($value)) {
                                 return;
                             }
