@@ -3,74 +3,151 @@
 namespace App\Livewire\Circulation;
 
 use App\Models\Copy;
-use App\Models\User;
+use App\Models\LibrarySession;
+use App\Models\Loan;
 use App\Services\LibraryService;
+use App\Services\LibrarySessionService;
 use App\Services\SettingsService;
 use Livewire\Component;
 
 class Checkout extends Component
 {
     public $barcode = '';
-    public $userSearch = '';
-    public $selectedUserId = null;
     public $loanDays;
+    public $mode = 'borrow';
+    public $activeSessionUserId = null;
 
-    public function mount()
+    public function mount(): void
     {
         $this->loanDays = app(SettingsService::class)->getLoanPeriodDays();
-    }
-    public $message = '';
-    public $messageType = '';
 
-    protected $listeners = ['userSelected'];
+        $activeSession = LibrarySession::with('user')
+            ->where('status', 'active')
+            ->latest('check_in_time')
+            ->first();
 
-    public function userSelected($userId)
-    {
-        $this->selectedUserId = $userId;
+        $this->activeSessionUserId = $activeSession?->user_id;
     }
 
-    public function checkout()
+    public function setMode(string $mode): void
     {
-        $this->validate([
-            'barcode' => 'required|string',
-            'selectedUserId' => 'required|exists:users,id',
-            'loanDays' => 'required|integer|min:1|max:90',
-        ]);
+        if (!in_array($mode, ['borrow', 'return'], true)) {
+            return;
+        }
+
+        $this->mode = $mode;
+    }
+
+    public function getActiveSessionProperty(): ?LibrarySession
+    {
+        if (!$this->activeSessionUserId) {
+            return null;
+        }
+
+        return LibrarySession::with('user')
+            ->where('user_id', $this->activeSessionUserId)
+            ->where('status', 'active')
+            ->latest('check_in_time')
+            ->first();
+    }
+
+    public function handleRfidScan(string $uid): void
+    {
+        $uid = strtoupper(trim($uid));
+
+        if ($uid === '') {
+            return;
+        }
+
+        $this->barcode = $uid;
 
         try {
-            $copy = Copy::where('barcode', $this->barcode)->firstOrFail();
-            $user = User::findOrFail($this->selectedUserId);
+            $sessionService = app(LibrarySessionService::class);
 
-            $loan = app(LibraryService::class)->checkout($copy, $user, $this->loanDays);
+            $user = \App\Models\User::where('rfid_uid', $uid)->first();
+            if ($user) {
+                $this->handleStudentScan($sessionService, $user);
+                return;
+            }
 
-            $this->dispatch('toast', [
-                'message' => "Book '{$loan->copy->book->title}' checked out successfully to {$user->name}",
-                'type' => 'success'
-            ]);
-            
-            $this->reset(['barcode', 'selectedUserId', 'userSearch', 'loanDays']);
+            $copy = Copy::where('barcode', $uid)->first();
+            if ($copy) {
+                $this->handleBookScan($sessionService, $copy);
+                return;
+            }
+
+            throw new \Exception("Scanned UID '{$uid}' is not assigned to any student or book copy.");
         } catch (\Exception $e) {
             $this->dispatch('toast', [
                 'message' => $e->getMessage(),
-                'type' => 'error'
+                'type' => 'error',
             ]);
         }
+    }
+
+    protected function handleStudentScan(LibrarySessionService $sessionService, \App\Models\User $user): void
+    {
+        $activeSession = $sessionService->getActiveSession($user);
+
+        if ($activeSession) {
+            $sessionService->endSession($user);
+
+            if ($this->activeSessionUserId === $user->id) {
+                $this->activeSessionUserId = null;
+            }
+
+            $this->dispatch('toast', [
+                'message' => "{$user->name} checked out from the library.",
+                'type' => 'success',
+            ]);
+
+            return;
+        }
+
+        $sessionService->startSession($user);
+        $this->activeSessionUserId = $user->id;
+
+        $this->dispatch('toast', [
+            'message' => "{$user->name} checked in. Select mode and scan book RFID.",
+            'type' => 'success',
+        ]);
+    }
+
+    protected function handleBookScan(LibrarySessionService $sessionService, Copy $copy): void
+    {
+        $activeSession = $this->activeSession;
+        $sessionService->validateSession($activeSession);
+        $student = $activeSession->user;
+
+        if ($this->mode === 'borrow') {
+            $loan = app(LibraryService::class)->checkout($copy, $student, (int) $this->loanDays);
+
+            $this->dispatch('toast', [
+                'message' => "Book '{$loan->copy->book->title}' borrowed by {$student->name}.",
+                'type' => 'success',
+            ]);
+
+            return;
+        }
+
+        $loan = Loan::where('copy_id', $copy->id)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $loan = app(LibraryService::class)->return($loan);
+
+        $this->dispatch('toast', [
+            'message' => "Book '{$loan->copy->book->title}' returned successfully.",
+            'type' => 'success',
+        ]);
     }
 
     public function render()
     {
-        $users = [];
-        if ($this->userSearch) {
-            $users = User::where('name', 'like', "%{$this->userSearch}%")
-                ->orWhere('email', 'like', "%{$this->userSearch}%")
-                ->take(10)
-                ->get();
-        }
-
         return view('livewire.circulation.checkout', [
-            'users' => $users,
+            'activeSession' => $this->activeSession,
         ])->layout('components.layouts.app.sidebar', [
-            'title' => __('Checkout Book'),
+            'title' => __('RFID Circulation'),
         ]);
     }
 }

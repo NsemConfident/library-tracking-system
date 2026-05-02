@@ -173,53 +173,30 @@ class ArduinoRFID {
             }, 3000);
         }
 
-        // Try to find the Livewire barcode input
         const barcodeInput =
             document.querySelector('input[wire\\:model=\"barcode\"]') ||
             document.querySelector('input[wire\\:model*=\"barcode\"]') ||
             document.querySelector('input[name*=\"barcode\"]');
+        const wireId = barcodeInput?.closest('[wire\\:id]')?.getAttribute('wire:id');
 
+        if (wireId && window.Livewire) {
+            const component = window.Livewire.find(wireId);
+            if (component && typeof component.call === 'function') {
+                component.call('handleRfidScan', uid);
+                console.log('[ArduinoRFID] Sent UID to handleRfidScan:', uid);
+                return;
+            }
+        }
+
+        // Fallback for pages still using direct barcode input.
         if (!barcodeInput) {
-            alert(`Scanned ${uid}, but no barcode field was found on this page.`);
+            alert(`Scanned ${uid}, but no Livewire scan handler or barcode field was found on this page.`);
             return;
         }
 
-        // Update Livewire component using Livewire's API
-        const wireId = barcodeInput.getAttribute('wire:id') || 
-                      barcodeInput.closest('[wire\\:id]')?.getAttribute('wire:id');
-        
-        if (wireId && window.Livewire) {
-            const component = window.Livewire.find(wireId);
-            if (component) {
-                // Use Livewire's set method to update the barcode property
-                component.set('barcode', uid);
-                console.log('[ArduinoRFID] Updated Livewire component barcode:', uid);
-            } else {
-                // Fallback: direct input update
-                barcodeInput.value = uid;
-                barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
-                barcodeInput.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        } else {
-            // Fallback: direct input update
-            barcodeInput.value = uid;
-            barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
-            barcodeInput.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-
-        const path = window.location.pathname;
-        const isReturnPage = path.includes('/circulation/return');
-
-        // On the Return page, auto-submit the form after a short delay
-        if (isReturnPage) {
-            setTimeout(() => {
-                const form = barcodeInput.closest('form');
-                if (form) {
-                    // Use requestSubmit so the existing wire:submit handler runs
-                    form.requestSubmit();
-                }
-            }, 300); // Small delay to ensure Livewire has updated
-        }
+        barcodeInput.value = uid;
+        barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
+        barcodeInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     async disconnect() {

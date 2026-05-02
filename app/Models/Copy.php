@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Validation\ValidationException;
 
 class Copy extends Model
 {
@@ -21,6 +22,24 @@ class Copy extends Model
     protected $casts = [
         'acquired_date' => 'date',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Copy $copy) {
+            if (blank($copy->barcode)) {
+                return;
+            }
+
+            $normalized = strtoupper(trim($copy->barcode));
+            $copy->barcode = $normalized;
+
+            if (User::whereRaw('UPPER(rfid_uid) = ?', [$normalized])->exists()) {
+                throw ValidationException::withMessages([
+                    'barcode' => 'This RFID UID is already assigned to a student.',
+                ]);
+            }
+        });
+    }
 
     /**
      * Get the book this copy belongs to

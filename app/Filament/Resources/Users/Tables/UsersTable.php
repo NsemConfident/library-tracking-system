@@ -36,6 +36,10 @@ class UsersTable
                 TextColumn::make('phone')
                     ->searchable()
                     ->toggleable(),
+                TextColumn::make('rfid_uid')
+                    ->label('RFID UID')
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('active_loans_count')
                     ->counts('activeLoans')
                     ->label('Active Loans')

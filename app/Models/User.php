@@ -4,9 +4,12 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
@@ -26,6 +29,7 @@ class User extends Authenticatable
         'role',
         'phone',
         'address',
+        'rfid_uid',
     ];
 
     /**
@@ -39,6 +43,25 @@ class User extends Authenticatable
         'two_factor_recovery_codes',
         'remember_token',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            if (blank($user->rfid_uid)) {
+                $user->rfid_uid = null;
+                return;
+            }
+
+            $normalized = strtoupper(trim($user->rfid_uid));
+            $user->rfid_uid = $normalized;
+
+            if (Copy::whereRaw('UPPER(barcode) = ?', [$normalized])->exists()) {
+                throw ValidationException::withMessages([
+                    'rfid_uid' => 'This RFID UID is already assigned to a book copy.',
+                ]);
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -83,6 +106,22 @@ class User extends Authenticatable
     public function fines()
     {
         return $this->hasMany(Fine::class);
+    }
+
+    /**
+     * Get all library sessions for this user.
+     */
+    public function librarySessions(): HasMany
+    {
+        return $this->hasMany(LibrarySession::class);
+    }
+
+    /**
+     * Get the active library session for this user.
+     */
+    public function activeLibrarySession(): HasOne
+    {
+        return $this->hasOne(LibrarySession::class)->where('status', 'active');
     }
 
     /**

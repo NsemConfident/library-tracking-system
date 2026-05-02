@@ -40,6 +40,12 @@ class ReturnBook extends Component
         }
     }
 
+    public function handleRfidScan(string $uid): void
+    {
+        $this->barcode = strtoupper(trim($uid));
+        $this->returnBook();
+    }
+
     public function render()
     {
         return view('livewire.circulation.return-book')->layout('components.layouts.app.sidebar', [

@@ -18,6 +18,9 @@ class UserInfolist
                     ->badge(),
                 TextEntry::make('phone')
                     ->placeholder('-'),
+                TextEntry::make('rfid_uid')
+                    ->label('RFID UID')
+                    ->placeholder('-'),
                 TextEntry::make('address')
                     ->placeholder('-')
                     ->columnSpanFull(),

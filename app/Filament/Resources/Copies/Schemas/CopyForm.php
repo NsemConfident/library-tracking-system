@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Copies\Schemas;
 
+use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -24,6 +25,19 @@ class CopyForm
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255)
+                    ->rules([
+                        function (string $attribute, $value, \Closure $fail) {
+                            if (blank($value)) {
+                                return;
+                            }
+
+                            $normalized = strtoupper(trim((string) $value));
+                            if (User::whereRaw('UPPER(rfid_uid) = ?', [$normalized])->exists()) {
+                                $fail('This RFID UID is already assigned to a student.');
+                            }
+                        },
+                    ])
+                    ->dehydrateStateUsing(fn ($state) => strtoupper(trim($state)))
                     ->label('Barcode'),
                 Select::make('status')
                     ->options([
