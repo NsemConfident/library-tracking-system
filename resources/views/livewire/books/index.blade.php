@@ -48,7 +48,7 @@
                                     $coverPath = str_replace('\\', '/', $coverPath);
                                     $coverPath = ltrim($coverPath, '/');
                                 }
-                                $coverUrl = $coverPath ? asset('storage/' . $coverPath) : null;
+                                $coverUrl = $coverPath ? '/storage/' . $coverPath : null;
                             @endphp
 
                             @if($coverUrl)
