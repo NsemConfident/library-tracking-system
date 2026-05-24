@@ -37,8 +37,22 @@
                     <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer hover:shadow-lg transition-shadow" 
                          wire:click="$dispatch('open-modal', { component: 'books.show', arguments: { book: {{ $book->id }} } })">
                         <div class="p-6">
-                            @if($book->cover_image)
-                                <img src="{{ asset('storage/' . $book->cover_image) }}" 
+                            @php
+                                $cover = $book->cover_image;
+                                if (is_array($cover)) {
+                                    $coverPath = $cover[0] ?? null;
+                                } else {
+                                    $coverPath = $cover;
+                                }
+                                if (is_string($coverPath)) {
+                                    $coverPath = str_replace('\\', '/', $coverPath);
+                                    $coverPath = ltrim($coverPath, '/');
+                                }
+                                $coverUrl = $coverPath ? asset('storage/' . $coverPath) : null;
+                            @endphp
+
+                            @if($coverUrl)
+                                <img src="{{ $coverUrl }}" 
                                      alt="{{ $book->title }}"
                                      class="w-full h-48 object-cover rounded-lg mb-4">
                             @else

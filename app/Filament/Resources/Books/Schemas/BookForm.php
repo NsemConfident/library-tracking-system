@@ -56,6 +56,7 @@ class BookForm
                     ->columnSpanFull(),
                 FileUpload::make('cover_image')
                     ->image()
+                    ->disk('public')
                     ->directory('book-covers')
                     ->columnSpanFull(),
             ])
